@@ -1,5 +1,5 @@
 # Build stage
-FROM openjdk:8-alpine AS build
+FROM eclipse-temurin:17-jdk-alpine AS build
 
 # Install Maven
 RUN apk add --no-cache maven
@@ -17,7 +17,7 @@ COPY ${WORK_DIR}/src ./src
 RUN mvn -B -f /app/pom.xml package -DskipTests
 
 # Runtime image
-FROM openjdk:8-alpine
+FROM eclipse-temurin:8-jre-alpine
 
 WORKDIR /opt/egov
 

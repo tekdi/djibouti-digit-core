@@ -214,8 +214,14 @@ public class UserController {
                 if (searchCriteria.getMobileNumber() != null ||
                         searchCriteria.getUserName() != null ||
                         searchCriteria.getEmailId() != null ||
-                        searchCriteria.getName() != null ||
-                        !isEmpty(searchCriteria.getRoleCodes())) {
+                        searchCriteria.getName() != null) {
+                    shouldRestrict = true;
+                }
+
+                // If searching by roleCodes, restrict only on External (non-inter-service)
+                // traffic.
+                // Internal services (like HRMS) must be allowed to look up users by roleCodes.
+                else if (!isEmpty(searchCriteria.getRoleCodes()) && !isInterService) {
                     shouldRestrict = true;
                 }
 
@@ -267,8 +273,11 @@ public class UserController {
                 isSearchingOtherUsers = true;
             }
 
-            // Check if searching by name or roleCodes (not allowed for non-STUDIO_ADMIN)
-            if (searchCriteria.getName() != null || !isEmpty(searchCriteria.getRoleCodes())) {
+            // Check if searching by name (not allowed for non-STUDIO_ADMIN)
+            // roleCodes are allowed for inter-service calls (e.g., HRMS employee search by
+            // role)
+            if (searchCriteria.getName() != null ||
+                    (!isInterService && !isEmpty(searchCriteria.getRoleCodes()))) {
                 isSearchingOtherUsers = true;
             }
 
