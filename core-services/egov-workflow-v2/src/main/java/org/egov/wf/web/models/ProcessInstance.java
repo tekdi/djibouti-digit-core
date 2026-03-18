@@ -112,6 +112,10 @@ public class ProcessInstance   {
         @JsonProperty("triggerSelectiveParallelWorkflows")
         private String triggerSelectiveParallelWorkflows = null;
 
+        @Size(max=64)
+        @JsonProperty("applicantUuid")
+        private String applicantUuid = null;
+
         public ProcessInstance addDocumentsItem(Document documentsItem) {
             if (this.documents == null) {
             this.documents = new ArrayList<>();
@@ -141,4 +145,3 @@ public class ProcessInstance   {
         }
 
 }
-

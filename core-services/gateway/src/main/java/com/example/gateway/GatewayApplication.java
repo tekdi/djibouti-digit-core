@@ -67,6 +67,16 @@ public class GatewayApplication {
 	}
 
 	/**
+	 * Mixed-mode endpoints are accessible with or without auth, so RBAC is not enforced.
+	 * This bean is injected as anonymousEndpointsWhitelist in RbacPreCheckFilterHelper
+	 * and RbacPreCheckFormDataFilterHelper to skip the RBAC check for these endpoints.
+	 */
+	@Bean
+	public List<String> anonymousEndpointsWhitelist() {
+		return mixedModeEndpointsWhitelist;
+	}
+
+	/**
 	 * This to create a default RedisRateLimiter
 	 * @return
 	 */

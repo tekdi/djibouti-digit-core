@@ -1,6 +1,6 @@
 package com.example.gateway.filters.pre.helpers;
 
-import com.example.gateway.utils.UserUtils;
+import com.example.gateway.config.ApplicationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
@@ -13,7 +13,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.example.gateway.constants.GatewayConstants.*;
@@ -24,59 +24,68 @@ public class AuthPreCheckFilterHelper implements RewriteFunction<Map, Map> {
 
     public static final String AUTH_TOKEN_RETRIEVE_FAILURE_MESSAGE = "Retrieving of auth token failed";
     public static final String ROUTING_TO_ANONYMOUS_ENDPOINT_MESSAGE = "Routing to anonymous endpoint: {}";
-    public static final String ROUTING_TO_PROTECTED_ENDPOINT_RESTRICTED_MESSAGE =
-            "Routing to protected endpoint {} restricted - No auth token";
+    public static final String ROUTING_TO_PROTECTED_ENDPOINT_RESTRICTED_MESSAGE = "Routing to protected endpoint {} restricted - No auth token";
     public static final String UNAUTHORIZED_USER_MESSAGE = "You are not authorized to access this resource";
     public static final String PROCEED_ROUTING_MESSAGE = "Routing to an endpoint: {} - auth provided";
-    private List<String> openEndpointsWhitelist;
-    private List<String> mixedModeEndpointsWhitelist;
+
     private ObjectMapper objectMapper;
+    private ApplicationProperties applicationProperties;
 
-    private UserUtils userUtils;
-    public AuthPreCheckFilterHelper(List<String> openEndpointsWhitelist, List<String> mixedModeEndpointsWhitelist,
-                                    ObjectMapper objectMapper, UserUtils userUtils) {
-
-        this.openEndpointsWhitelist = openEndpointsWhitelist;
-        this.mixedModeEndpointsWhitelist = mixedModeEndpointsWhitelist;
+    public AuthPreCheckFilterHelper(ObjectMapper objectMapper, ApplicationProperties applicationProperties) {
         this.objectMapper = objectMapper;
+        this.applicationProperties = applicationProperties;
     }
-
 
     @Override
     public Publisher<Map> apply(ServerWebExchange exchange, Map body) {
 
-        String authToken;
+        if (ObjectUtils.isEmpty(body))
+            body = new HashMap<>();
+
+        String authToken = null;
         String endPointPath = exchange.getRequest().getPath().value();
 
-        if (openEndpointsWhitelist.contains(endPointPath)) {
+        if (applicationProperties.getOpenEndpointsWhitelist().contains(endPointPath)) {
             exchange.getAttributes().put(AUTH_BOOLEAN_FLAG_NAME, Boolean.FALSE);
             log.info(OPEN_ENDPOINT_MESSAGE, endPointPath);
             return Mono.just(body);
         }
 
         try {
-            RequestInfo requestInfo = objectMapper.convertValue(body.get(REQUEST_INFO_FIELD_NAME_PASCAL_CASE), RequestInfo.class);
+            body.putIfAbsent(REQUEST_INFO_FIELD_NAME_PASCAL_CASE, new RequestInfo());
+            RequestInfo requestInfo = objectMapper.convertValue(body.get(REQUEST_INFO_FIELD_NAME_PASCAL_CASE),
+                    RequestInfo.class);
             authToken = requestInfo.getAuthToken();
+
+            if (ObjectUtils.isEmpty(authToken)) {
+                authToken = exchange.getRequest().getQueryParams().getFirst(AUTH_TOKEN_KEY);
+            }
+            if (ObjectUtils.isEmpty(authToken)) {
+                authToken = exchange.getRequest().getHeaders().getFirst(AUTH_TOKEN);
+            }
+            if (!ObjectUtils.isEmpty(authToken)) {
+                requestInfo.setAuthToken(authToken);
+                body.put(REQUEST_INFO_FIELD_NAME_PASCAL_CASE, requestInfo);
+            }
         } catch (Exception e) {
             log.error(AUTH_TOKEN_RETRIEVE_FAILURE_MESSAGE, e);
             throw new CustomException(AUTH_TOKEN_RETRIEVE_FAILURE_MESSAGE, e.getMessage());
         }
 
         if (ObjectUtils.isEmpty(authToken)) {
-            if (mixedModeEndpointsWhitelist.contains(endPointPath)) {
+            if (applicationProperties.getMixedModeEndpointsWhitelist().contains(endPointPath)) {
                 log.info(ROUTING_TO_ANONYMOUS_ENDPOINT_MESSAGE, endPointPath);
                 exchange.getAttributes().put(AUTH_BOOLEAN_FLAG_NAME, Boolean.FALSE);
-//                User systemUser = userUtils.fetchSystemUser(requestInfo.getTenantId(), exchange.getRequest().getHeaders().getFirst(CORRELATION_ID_HEADER_NAME));
             } else {
                 log.info(ROUTING_TO_PROTECTED_ENDPOINT_RESTRICTED_MESSAGE, endPointPath);
-                CustomException customException = new CustomException(UNAUTHORIZED_USER_MESSAGE, UNAUTHORIZED_USER_MESSAGE);
+                CustomException customException = new CustomException(UNAUTHORIZED_USER_MESSAGE,
+                        UNAUTHORIZED_USER_MESSAGE);
                 customException.setCode(HttpStatus.UNAUTHORIZED.toString());
                 throw customException;
             }
         } else {
             log.info(PROCEED_ROUTING_MESSAGE, endPointPath);
             exchange.getAttributes().put(AUTH_BOOLEAN_FLAG_NAME, Boolean.TRUE);
-
         }
 
         return Mono.just(body);

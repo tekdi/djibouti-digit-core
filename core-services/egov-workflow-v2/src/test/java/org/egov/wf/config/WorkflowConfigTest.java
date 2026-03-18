@@ -17,7 +17,8 @@ class WorkflowConfigTest {
 
         WorkflowConfig workflowConfig = new WorkflowConfig("UTC", 1, 1, 3, "Save Transition Topic",
                 "Save Business Service Topic", "2020-03-01", "localhost", "https://config.us-east-2.amazonaws.com",
-                "localhost", "https://config.us-east-2.amazonaws.com", true, "MD", 3, 3, true);
+                "localhost", "https://config.us-east-2.amazonaws.com", "https://config.us-east-2.amazonaws.com",
+                true, "MD", 3, 3, true);
         workflowConfig.initialize();
         assertTrue(workflowConfig.getAssignedOnly());
         assertEquals("https://config.us-east-2.amazonaws.com", workflowConfig.getUserSearchEndpoint());
@@ -54,4 +55,3 @@ class WorkflowConfigTest {
                 (new WorkflowConfig()).jacksonConverter(mock(ObjectMapper.class)).getSupportedMediaTypes().size());
     }
 }
-

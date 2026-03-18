@@ -6,6 +6,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.egov.tracer.http.HttpUtils;
 import org.egov.wf.service.WorkflowService;
 import org.egov.wf.util.ResponseInfoFactory;
 import org.egov.wf.web.models.ProcessInstance;
@@ -17,8 +18,10 @@ import org.egov.wf.web.models.StatusCountRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -65,8 +68,10 @@ public class WorkflowController {
 
         @RequestMapping(value="/process/_search", method = RequestMethod.POST)
         public ResponseEntity<ProcessInstanceResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-                                                              @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
-        List<ProcessInstance> processInstances = workflowService.search(requestInfoWrapper.getRequestInfo(),criteria);
+                                                              @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria,
+                                                              @RequestHeader HttpHeaders headers) {
+        boolean isInterServiceCall = HttpUtils.isInterServiceCall(headers);
+        List<ProcessInstance> processInstances = workflowService.search(requestInfoWrapper.getRequestInfo(), criteria, isInterServiceCall);
         Integer count = workflowService.getUserBasedProcessInstancesCount(requestInfoWrapper.getRequestInfo(),criteria);
             ProcessInstanceResponse response  = ProcessInstanceResponse.builder().processInstances(processInstances).totalCount(count).build();
                 return new ResponseEntity<>(response,HttpStatus.OK);

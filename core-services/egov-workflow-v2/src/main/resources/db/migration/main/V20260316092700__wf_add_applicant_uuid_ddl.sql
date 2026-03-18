@@ -1,0 +1,1 @@
+ALTER TABLE eg_wf_processinstance_v2 ADD COLUMN IF NOT EXISTS applicantuuid character varying(64);

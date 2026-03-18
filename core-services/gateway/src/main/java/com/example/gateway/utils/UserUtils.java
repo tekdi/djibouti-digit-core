@@ -3,8 +3,8 @@ package com.example.gateway.utils;
 import com.example.gateway.config.ApplicationProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.User;
-import org.egov.common.contract.user.UserDetailResponse;
-import org.egov.common.contract.user.UserSearchRequest;
+import com.example.gateway.model.UserDetailResponse;
+import com.example.gateway.model.UserSearchRequest;
 import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.tracer.model.CustomException;
 import org.springframework.cache.annotation.Cacheable;
@@ -15,6 +15,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
 
 import static com.example.gateway.constants.GatewayConstants.CORRELATION_ID_HEADER_NAME;
 import static com.example.gateway.constants.GatewayConstants.REQUEST_TENANT_ID_KEY;
@@ -29,9 +32,23 @@ public class UserUtils {
 
     private MultiStateInstanceUtil multiStateInstanceUtil;
 
+    @Value("#{${egov.statelevel.tenant.map:{}}}")
+    private Map<String, String> stateLevelTenantMap;
+
+    @Value("${egov.statelevel.tenant:}")
+    private String stateLevelTenant;
+
     public UserUtils (RestTemplate restTemplate, ApplicationProperties applicationProperties) {
         this.restTemplate = restTemplate;
         this.applicationProperties = applicationProperties;
+    }
+
+    public Map<String, String> getStateLevelTenantMap() {
+        return stateLevelTenantMap;
+    }
+
+    public String getStateLevelTenant() {
+        return stateLevelTenant;
     }
 
     public User getUser(String authToken) {

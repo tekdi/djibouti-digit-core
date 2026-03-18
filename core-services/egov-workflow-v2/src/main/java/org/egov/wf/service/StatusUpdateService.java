@@ -157,6 +157,7 @@ public class StatusUpdateService {
 				.moduleName(processInstanceFromRequest.getModuleName())
 				.tenantId(processInstanceFromRequest.getTenantId())
 				.assignes(filteredAssignees)
+				.applicantUuid(processInstanceFromRequest.getApplicantUuid())
 				.build();
 		List<ProcessInstance> processInstances = new LinkedList<>();
 		processInstances.add(processInstance);

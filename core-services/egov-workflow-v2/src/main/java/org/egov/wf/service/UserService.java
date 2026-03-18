@@ -60,6 +60,32 @@ public class UserService {
         return idToUserMap;
     }
 
+    /**
+     * Fetches user details using authToken by calling user/_details endpoint
+     * @param requestInfo The RequestInfo containing authToken
+     * @return User populated from the token, or null if not found
+     */
+    public User getUserByAuthToken(RequestInfo requestInfo) {
+        String authToken = requestInfo.getAuthToken();
+        if (authToken == null || authToken.isBlank()) {
+            return null;
+        }
+        StringBuilder url = new StringBuilder(config.getUserHost())
+                .append(config.getUserDetailsEndpoint())
+                .append("?access_token=").append(authToken);
+        try {
+            LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(url, new UserSearchRequest() {{ setRequestInfo(requestInfo); }});
+            parseResponse(responseMap, "yyyy-MM-dd");
+            UserDetailResponse userDetailResponse = mapper.convertValue(responseMap, UserDetailResponse.class);
+            if (!CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+                return userDetailResponse.getUser().get(0);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching user details for authToken: {}", authToken, e);
+        }
+        return null;
+    }
+
     public List<String> searchUserUuidsBasedOnRoleCodes(UserSearchRequest userSearchRequest){
         StringBuilder url = new StringBuilder(config.getUserHost());
         url.append(config.getUserSearchEndpoint());

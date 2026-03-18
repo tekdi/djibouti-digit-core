@@ -5,7 +5,7 @@ public class GatewayConstants {
     public static final String EMPTY_STRING = "";
     public static final String JSON_TYPE = "json";
     public static final String X_WWW_FORM_URLENCODED_TYPE = "application/x-www-form-urlencoded";
-    public static final String FORM_DATA = "multipart/form-data";
+    public static final String FORM_DATA_TYPE = "multipart/form-data";
     public static final String RECEIVED_REQUEST_MESSAGE = "Received request for: {}";
     public static final String AUTH_BOOLEAN_FLAG_NAME = "shouldDoAuth";
     public static final String AUTH_TOKEN_KEY = "authToken";
@@ -20,6 +20,7 @@ public class GatewayConstants {
     public static final String POST = "POST";
     public static final String PUT = "PUT";
     public static final String PATCH = "PATCH";
+    public static final String AUTH_TOKEN = "auth-token";
 
     public static final String FILESTORE_REGEX = "^/filestore/.*";
     public static final String REQUEST_INFO_FIELD_NAME_PASCAL_CASE = "RequestInfo";
@@ -35,6 +36,7 @@ public class GatewayConstants {
     public static final String REQUEST_TENANT_ID_KEY = "tenantId";
     public static final String TENANT_ID_KEY = "TENANT_ID";
     public static final String OPEN_ENDPOINT_MESSAGE = "Routing to an open endpoint: {}";
-
+    public static final String PASS_THROUGH_GATEWAY_HEADER_NAME = "x-pass-through-gateway";
+    public static final String PASS_THROUGH_GATEWAY_HEADER_VALUE = "true";
 
 }

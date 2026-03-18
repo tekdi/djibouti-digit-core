@@ -167,7 +167,7 @@ class WorkflowServiceTest {
         processInstanceSearchCriteria.setTenantId("42");
         processInstanceSearchCriteria.setTenantSpecifiStatus(new ArrayList<>());
         processInstanceSearchCriteria.setToDate(1L);
-        List<ProcessInstance> actualSearchResult = this.workflowService.search(requestInfo, processInstanceSearchCriteria);
+        List<ProcessInstance> actualSearchResult = this.workflowService.search(requestInfo, processInstanceSearchCriteria, false);
         assertSame(processInstanceList, actualSearchResult);
         assertTrue(actualSearchResult.isEmpty());
         verify(this.worKflowRepository).getProcessInstances((ProcessInstanceSearchCriteria) any());
@@ -207,7 +207,7 @@ class WorkflowServiceTest {
         processInstanceSearchCriteria.setTenantId("42");
         processInstanceSearchCriteria.setTenantSpecifiStatus(new ArrayList<>());
         processInstanceSearchCriteria.setToDate(1L);
-        List<ProcessInstance> actualSearchResult = this.workflowService.search(requestInfo, processInstanceSearchCriteria);
+        List<ProcessInstance> actualSearchResult = this.workflowService.search(requestInfo, processInstanceSearchCriteria, false);
         assertSame(processInstanceList, actualSearchResult);
         assertEquals(1, actualSearchResult.size());
         verify(this.worKflowRepository).getProcessInstances((ProcessInstanceSearchCriteria) any());
@@ -716,4 +716,3 @@ class WorkflowServiceTest {
         verify(processInstanceSearchCriteria).setToDate((Long) any());
     }
 }
-
